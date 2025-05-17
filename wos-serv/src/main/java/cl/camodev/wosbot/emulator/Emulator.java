@@ -357,7 +357,7 @@ public abstract class Emulator {
 	}
 
 	public void launchApp(String emulatorNumber, String packageName) {
-		String command = "shell monkey -p " + packageName + " -c android.intent.category.LAUNCHER 1";
+		String command = "shell monkey -p " + packageName + " -v 1";
 		executeAdbCommand(emulatorNumber, command);
 		System.out.println("📱 Aplicación " + packageName + " iniciada en el emulador " + emulatorNumber);
 	}
