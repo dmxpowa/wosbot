@@ -21,6 +21,8 @@ import net.sourceforge.tess4j.TesseractException;
 public class TrainingTroopsTask extends DelayedTask {
 
 	private final TroopType troopType;
+	private int attempts = 0;
+	private int maxRetries = 5;
 
 	public enum TroopType {
 		//@formatter:off
@@ -84,7 +86,14 @@ public class TrainingTroopsTask extends DelayedTask {
 					}
 
 					ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "getting next training schedule");
+
 					Optional<LocalDateTime> optionalNextTime = extractNextTime();
+
+					if (this.attempts == this.maxRetries) {
+						this.attempts = 0;
+						LocalDateTime now = LocalDateTime.now();
+						optionalNextTime = Optional.of(now.plusHours(1));
+					}
 
 					if (optionalNextTime.isPresent()) {
 						this.reschedule(optionalNextTime.get());
@@ -112,7 +121,8 @@ public class TrainingTroopsTask extends DelayedTask {
 			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Error processing OCR text");
 			return Optional.empty();
 		} catch (Exception e) {
-			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Unexpected error extracting time");
+			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Unexpected error extracting time. Attempts: " + this.attempts + "/" + this.maxRetries);
+			this.attempts++;
 			return Optional.empty();
 		}
 	}
