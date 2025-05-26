@@ -121,8 +121,8 @@ public class TrainingTroopsTask extends DelayedTask {
 			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Error processing OCR text");
 			return Optional.empty();
 		} catch (Exception e) {
-			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Unexpected error extracting time. Attempts: " + this.attempts + "/" + this.maxRetries);
 			this.attempts++;
+			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "Unexpected error extracting time. Attempts: " + this.attempts + "/" + this.maxRetries);
 			return Optional.empty();
 		}
 	}
