@@ -39,34 +39,41 @@ public class InitializeTask extends DelayedTask {
 			ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "whiteout survival not installed, stopping queue");
 			throw new StopExecutionException("Game not installed");
 		} else {
-
-			ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "launching game");
-			EmulatorManager.getInstance().launchApp(EMULATOR_NUMBER, EmulatorManager.WHITEOUT_PACKAGE);
-			sleepTask(25000);
-
 			boolean homeScreen = false;
-			int attempts = 0;
-			while (!homeScreen) {
-				DTOImageSearchResult homeResult = EmulatorManager.getInstance().searchTemplate(EMULATOR_NUMBER, EnumTemplates.GAME_HOME_FURNACE.getTemplate(), 0, 0, 720, 1280, 90);
-				if (homeResult.isFound()) {
-					homeScreen = true;
-					ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "home screen found");
-				} else {
-					ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "screen not found, waiting 5 seconds before checking again");
-					EmulatorManager.getInstance().tapBackButton(EMULATOR_NUMBER);
-					sleepTask(5000);
-					attempts++;
-				}
 
-				if (attempts > 5) {
-					ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "screen not found after 5 attempts, restarting emulator");
-					EmulatorManager.getInstance().closeEmulator(EMULATOR_NUMBER);
-					isStarted = false;
-					this.setRecurring(true);
-					break;
+			// if emulator was launched prior, don't waste time with unnecessary checks
+			DTOImageSearchResult checkHome = EmulatorManager.getInstance().searchTemplate(EMULATOR_NUMBER, EnumTemplates.GAME_HOME_FURNACE.getTemplate(), 0, 0, 720, 1280, 90);
+			if (checkHome.isFound()) {
+				homeScreen = true;
+				ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "home screen found");
+			} else {
+				ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "launching game");
+				EmulatorManager.getInstance().launchApp(EMULATOR_NUMBER, EmulatorManager.WHITEOUT_PACKAGE);
+				sleepTask(25000);
+
+
+				int attempts = 0;
+				while (!homeScreen) {
+					DTOImageSearchResult homeResult = EmulatorManager.getInstance().searchTemplate(EMULATOR_NUMBER, EnumTemplates.GAME_HOME_FURNACE.getTemplate(), 0, 0, 720, 1280, 90);
+					if (homeResult.isFound()) {
+						homeScreen = true;
+						ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "home screen found");
+					} else {
+						ServLogs.getServices().appendLog(EnumTpMessageSeverity.INFO, taskName, profile.getName(), "screen not found, waiting 5 seconds before checking again");
+						EmulatorManager.getInstance().tapBackButton(EMULATOR_NUMBER);
+						sleepTask(5000);
+						attempts++;
+					}
+
+					if (attempts > 5) {
+						ServLogs.getServices().appendLog(EnumTpMessageSeverity.ERROR, taskName, profile.getName(), "screen not found after 5 attempts, restarting emulator");
+						EmulatorManager.getInstance().closeEmulator(EMULATOR_NUMBER);
+						isStarted = false;
+						this.setRecurring(true);
+						break;
+					}
 				}
 			}
-
 		}
 	}
 
